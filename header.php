@@ -281,6 +281,14 @@ $logo_exists = file_exists($logo_path);
                         <span><?php echo translate('nav_promo_manager'); ?></span>
                     </a>
                 </li>
+                <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+                <li class='<?php echo ($current_page == 'reseller_management.php') ? 'active' : ''; ?>'>
+                    <a href='reseller_management.php' style="align-items: center;">
+                        <span class="material-icons">groups</span>
+                        <span>Reseller Management</span>
+                    </a>
+                </li>
+                <?php endif; ?>
                 <li class='<?php echo ($current_page == 'app_management.php') ? 'active' : ''; ?>'>
                     <a href='app_management.php' style="align-items: center;">
                         <span class="material-icons">system_update</span>
