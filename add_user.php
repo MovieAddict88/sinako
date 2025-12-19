@@ -133,8 +133,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
 
-    // Close connection
-    unset($pdo);
 }
 
 include 'header.php';

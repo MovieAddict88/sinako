@@ -48,8 +48,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Update user status
     $sql = 'UPDATE users SET status = "Paid", payment = ? WHERE id = ?';
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([$amount, $user_id]);
+    if ($_SESSION['role'] === 'reseller') {
+        $sql .= ' AND reseller_id = ?';
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$amount, $user_id, $_SESSION['id']]);
+    } else {
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$amount, $user_id]);
+    }
 
     // Redirect to index page
     header('location: index.php');

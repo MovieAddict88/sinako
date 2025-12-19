@@ -42,8 +42,6 @@ if (isset($_GET['id']) && !empty(trim($_GET['id']))) {
     // Close statement
     unset($stmt);
 
-    // Close connection
-    unset($pdo);
 } else {
     // Redirect to monitoring page if id is not provided
     header('location: monitoring.php');

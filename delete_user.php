@@ -76,8 +76,14 @@ if (isset($_POST['id']) && !empty($_POST['id'])) {
 
         // Then, delete the user from the users table
         $sql_delete = 'DELETE FROM users WHERE id = :id';
+        if ($_SESSION['role'] === 'reseller') {
+            $sql_delete .= " AND reseller_id = :reseller_id";
+        }
         $stmt_delete = $pdo->prepare($sql_delete);
         $stmt_delete->bindParam(':id', $user_id, PDO::PARAM_INT);
+        if ($_SESSION['role'] === 'reseller') {
+            $stmt_delete->bindParam(':reseller_id', $_SESSION['id'], PDO::PARAM_INT);
+        }
         $stmt_delete->execute();
 
         // Commit the transaction
@@ -97,8 +103,6 @@ if (isset($_POST['id']) && !empty($_POST['id'])) {
     unset($stmt_delete);
     unset($stmt_terminate);
 
-    // Close connection
-    unset($pdo);
 } else {
     // Check existence of id parameter
     if (empty(trim($_GET['id']))) {
