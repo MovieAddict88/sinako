@@ -6,6 +6,23 @@ $site_name = get_setting($pdo, 'site_name');
 $site_icon = get_setting($pdo, 'site_icon');
 $current_page = basename($_SERVER['PHP_SELF']);
 
+// Check if the user is a client of a reseller and apply branding
+if (isset($_SESSION['loggedin']) && $_SESSION['loggedin'] === true && isset($_SESSION['role']) && $_SESSION['role'] === 'user') {
+    $user_id = $_SESSION['id'];
+    $sql = 'SELECT r.logo_path, r.primary_color, r.secondary_color, r.company_name FROM resellers r JOIN reseller_clients rc ON r.id = rc.reseller_id WHERE rc.client_id = ?';
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$user_id]);
+    $reseller_branding = $stmt->fetch();
+
+    if ($reseller_branding) {
+        $site_name = $reseller_branding['company_name'] ?: $site_name;
+        $site_icon = $reseller_branding['logo_path'] ?: $site_icon;
+        $primary_color = $reseller_branding['primary_color'];
+        $secondary_color = $reseller_branding['secondary_color'];
+    }
+}
+
+
 // Define logo path - check if it exists, otherwise use default
 $logo_path = $site_icon ? $site_icon : 'assets/orig_cs.png';
 $logo_exists = file_exists($logo_path);
@@ -209,6 +226,17 @@ $logo_exists = file_exists($logo_path);
             animation: logoFadeIn 0.5s ease-out;
         }
     </style>
+    <?php if (isset($primary_color) && isset($secondary_color)): ?>
+    <style>
+        .sidebar {
+            background-color: <?php echo htmlspecialchars($primary_color); ?> !important;
+        }
+        .btn-primary {
+            background-color: <?php echo htmlspecialchars($secondary_color); ?> !important;
+            border-color: <?php echo htmlspecialchars($secondary_color); ?> !important;
+        }
+    </style>
+    <?php endif; ?>
 </head>
 <body>
     <!-- Mobile Navigation -->
@@ -251,6 +279,14 @@ $logo_exists = file_exists($logo_path);
                         <span><?php echo translate('nav_dashboard'); ?></span>
                     </a>
                 </li>
+                <?php if (isset($_SESSION['is_reseller']) && $_SESSION['is_reseller']): ?>
+                <li class='<?php echo ($current_page == 'reseller_dashboard.php') ? 'active' : ''; ?>'>
+                    <a href='reseller_dashboard.php' style="align-items: center;">
+                        <span class="material-icons">store</span>
+                        <span>Reseller Dashboard</span>
+                    </a>
+                </li>
+                <?php endif; ?>
                 <li class='<?php echo ($current_page == 'index.php') ? 'active' : ''; ?>'>
                     <a href='index.php' style="align-items: center;">
                         <span class="material-icons">people</span>

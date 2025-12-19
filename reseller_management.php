@@ -8,7 +8,13 @@ if (!is_admin()) {
     exit;
 }
 
-$stmt = $pdo->prepare("SELECT id, username, is_reseller FROM users");
+$stmt = $pdo->prepare("
+    SELECT u.id, u.username, u.is_reseller, r.id as reseller_id,
+           (SELECT COUNT(*) FROM reseller_clients rc WHERE rc.reseller_id = r.id) as client_count,
+           (SELECT SUM(c.commission_earned) FROM commissions c WHERE c.reseller_id = r.id) as total_commission
+    FROM users u
+    LEFT JOIN resellers r ON u.id = r.user_id
+");
 $stmt->execute();
 $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -34,6 +40,8 @@ include 'header.php';
                 <tr>
                     <th>Username</th>
                     <th>Status</th>
+                    <th>Clients</th>
+                    <th>Commission</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -42,6 +50,8 @@ include 'header.php';
                     <tr>
                         <td><?php echo htmlspecialchars($user['username']); ?></td>
                         <td><?php echo $user['is_reseller'] ? 'Reseller' : 'User'; ?></td>
+                        <td><?php echo $user['is_reseller'] ? $user['client_count'] : 'N/A'; ?></td>
+                        <td><?php echo $user['is_reseller'] ? '$' . number_format($user['total_commission'] ?? 0, 2) : 'N/A'; ?></td>
                         <td>
                             <form action="toggle_reseller.php" method="post" style="display: inline;">
                                 <input type="hidden" name="id" value="<?php echo $user['id']; ?>">
@@ -50,6 +60,9 @@ include 'header.php';
                                     <?php echo $user['is_reseller'] ? 'Remove Reseller' : 'Make Reseller'; ?>
                                 </button>
                             </form>
+                            <?php if ($user['is_reseller']): ?>
+                                <a href="view_reseller.php?id=<?php echo $user['reseller_id']; ?>" class="btn btn-info">View</a>
+                            <?php endif; ?>
                         </td>
                     </tr>
                 <?php endforeach; ?>

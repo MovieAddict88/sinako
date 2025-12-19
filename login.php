@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Validate credentials
     if (empty($username_err) && empty($password_err)) {
         // Prepare a select statement - Only allow admin users to login
-        $sql = 'SELECT id, username, password, role FROM users WHERE username = :username AND role = "admin"';
+        $sql = 'SELECT id, username, password, role, is_reseller FROM users WHERE username = :username';
 
         if ($stmt = $pdo->prepare($sql)) {
             // Bind variables to the prepared statement as parameters
@@ -65,10 +65,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             $_SESSION['loggedin'] = true;
                             $_SESSION['id'] = $id;
                             $_SESSION['username'] = $username;
-                            $_SESSION['role'] = $role;
+                            $_SESSION['role'] = $row['role'];
+                            $_SESSION['is_reseller'] = $row['is_reseller'];
+
+                            if ($row['is_reseller']) {
+                                $sql_reseller = 'SELECT id FROM resellers WHERE user_id = ?';
+                                $stmt_reseller = $pdo->prepare($sql_reseller);
+                                $stmt_reseller->execute([$id]);
+                                $reseller = $stmt_reseller->fetch();
+                                $_SESSION['reseller_id'] = $reseller['id'];
+                            }
 
                             // Redirect user to welcome page
-                            header('location: index.php');
+                            header('location: dashboard.php');
                         } else {
                             // Display an error message if password is not valid
                             $password_err = translate('invalid_password');
