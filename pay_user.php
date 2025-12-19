@@ -41,15 +41,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    // Insert payment into the database
-    $sql = 'INSERT INTO payments (user_id, amount, payment_date, payment_time, payment_method, reference_number, attachment_path) VALUES (?, ?, ?, ?, ?, ?, ?)';
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([$user_id, $amount, $payment_date, $payment_time, $payment_method, $reference_number, $attachment_path]);
+    try {
+        $pdo->beginTransaction();
 
-    // Update user status
-    $sql = 'UPDATE users SET status = "Paid", payment = ? WHERE id = ?';
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute([$amount, $user_id]);
+        // Insert payment into the database
+        $sql = 'INSERT INTO payments (user_id, amount, payment_date, payment_time, payment_method, reference_number, attachment_path) VALUES (?, ?, ?, ?, ?, ?, ?)';
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$user_id, $amount, $payment_date, $payment_time, $payment_method, $reference_number, $attachment_path]);
+
+        // Update user status
+        $sql = 'UPDATE users SET status = "Paid", payment = ? WHERE id = ?';
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$amount, $user_id]);
+
+        // Check if the user is a client of a reseller
+        $sql = 'SELECT reseller_id FROM reseller_clients WHERE client_id = ?';
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$user_id]);
+        $reseller_client = $stmt->fetch();
+
+        if ($reseller_client) {
+            $reseller_id = $reseller_client['reseller_id'];
+
+            // Get reseller commission rate
+            $sql_rate = 'SELECT commission_rate FROM resellers WHERE id = ?';
+            $stmt_rate = $pdo->prepare($sql_rate);
+            $stmt_rate->execute([$reseller_id]);
+            $reseller = $stmt_rate->fetch();
+            $commission_rate = $reseller['commission_rate'];
+
+            $commission_earned = $amount * $commission_rate;
+
+            // Insert commission into the commissions table
+            $sql = 'INSERT INTO commissions (reseller_id, client_id, amount, commission_rate, commission_earned) VALUES (?, ?, ?, ?, ?)';
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute([$reseller_id, $user_id, $amount, $commission_rate, $commission_earned]);
+        }
+
+        $pdo->commit();
+    } catch (Exception $e) {
+        $pdo->rollBack();
+        die("An error occurred: " . $e->getMessage());
+    }
 
     // Redirect to index page
     header('location: index.php');
