@@ -299,12 +299,14 @@ $logo_exists = file_exists($logo_path);
                         <span><?php echo translate('nav_vpn_monitoring'); ?></span>
                     </a>
                 </li>
+                <?php if (empty($_SESSION['is_reseller'])): ?>
                 <li class='<?php echo ($current_page == 'upload_profiles.php') ? 'active' : ''; ?>'>
                     <a href='upload_profiles.php' style="align-items: center;">
                         <span class="material-icons">cloud_upload</span>
                         <span><?php echo translate('nav_upload_profiles'); ?></span>
                     </a>
                 </li>
+                <?php endif; ?>
                 <li class='<?php echo ($current_page == 'profiles.php') ? 'active' : ''; ?>'>
                     <a href='profiles.php' style="align-items: center;">
                         <span class="material-icons">manage_accounts</span>
