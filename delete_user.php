@@ -2,8 +2,8 @@
 // Start session
 session_start();
 
-// Check if the user is logged in and is admin, otherwise redirect to login page
-if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true || $_SESSION['role'] !== 'admin') {
+// Check if the user is logged in and is an admin or reseller, otherwise redirect to the login page
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true || !in_array($_SESSION['role'], ['admin', 'reseller'])) {
     header('location: login.php');
     exit;
 }
@@ -16,10 +16,16 @@ if (isset($_GET['id']) && !empty(trim($_GET['id']))) {
     $id = trim($_GET['id']);
     
     // Check if user is admin
-    $check_sql = 'SELECT role FROM users WHERE id = :id';
+    $check_sql = 'SELECT role, reseller_id FROM users WHERE id = :id';
+    if ($_SESSION['role'] === 'reseller') {
+        $check_sql .= " AND reseller_id = :reseller_id";
+    }
     if ($check_stmt = $pdo->prepare($check_sql)) {
         $check_stmt->bindParam(':id', $param_id, PDO::PARAM_INT);
         $param_id = $id;
+        if ($_SESSION['role'] === 'reseller') {
+            $check_stmt->bindParam(':reseller_id', $_SESSION['id'], PDO::PARAM_INT);
+        }
         
         if ($check_stmt->execute()) {
             if ($check_stmt->rowCount() == 1) {
@@ -70,8 +76,14 @@ if (isset($_POST['id']) && !empty($_POST['id'])) {
 
         // Then, delete the user from the users table
         $sql_delete = 'DELETE FROM users WHERE id = :id';
+        if ($_SESSION['role'] === 'reseller') {
+            $sql_delete .= " AND reseller_id = :reseller_id";
+        }
         $stmt_delete = $pdo->prepare($sql_delete);
         $stmt_delete->bindParam(':id', $user_id, PDO::PARAM_INT);
+        if ($_SESSION['role'] === 'reseller') {
+            $stmt_delete->bindParam(':reseller_id', $_SESSION['id'], PDO::PARAM_INT);
+        }
         $stmt_delete->execute();
 
         // Commit the transaction
@@ -91,8 +103,6 @@ if (isset($_POST['id']) && !empty($_POST['id'])) {
     unset($stmt_delete);
     unset($stmt_terminate);
 
-    // Close connection
-    unset($pdo);
 } else {
     // Check existence of id parameter
     if (empty(trim($_GET['id']))) {

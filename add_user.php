@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $password = trim($_POST['password']);
     }
 
-    if ($_POST['role'] === 'user') {
+    if ($_POST['role'] === 'user' || $_POST['role'] === 'reseller') {
         // Validate first name
         if (empty(trim($_POST['first_name']))) {
             $first_name_err = 'Please enter a first name.';
@@ -91,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Check input errors before inserting in database
     if (empty($username_err) && empty($password_err) && empty($first_name_err) && empty($last_name_err) && empty($contact_number_err)) {
         // Prepare an insert statement - regular users always have 'user' role
-        $sql = 'INSERT INTO users (username, password, first_name, last_name, contact_number, login_code, role, daily_limit, promo_id, billing_month) VALUES (:username, :password, :first_name, :last_name, :contact_number, :login_code, :role, :daily_limit, :promo_id, :billing_month)';
+        $sql = 'INSERT INTO users (username, password, first_name, last_name, contact_number, login_code, role, daily_limit, promo_id, billing_month, reseller_id) VALUES (:username, :password, :first_name, :last_name, :contact_number, :login_code, :role, :daily_limit, :promo_id, :billing_month, :reseller_id)';
 
         if ($stmt = $pdo->prepare($sql)) {
             // Bind variables to the prepared statement as parameters
@@ -105,6 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmt->bindParam(':daily_limit', $param_daily_limit, PDO::PARAM_INT);
             $stmt->bindParam(':promo_id', $param_promo_id, PDO::PARAM_INT);
             $stmt->bindParam(':billing_month', $param_billing_month, PDO::PARAM_STR);
+            $stmt->bindParam(':reseller_id', $param_reseller_id, PDO::PARAM_INT);
 
             // Set parameters
             $param_username = $username;
@@ -117,6 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $param_daily_limit = convert_to_bytes($_POST['limit_value'], $_POST['limit_unit']);
             $param_promo_id = $_POST['promo_id'];
             $param_billing_month = $_POST['billing_month'];
+            $param_reseller_id = ($_SESSION['role'] === 'reseller') ? $_SESSION['id'] : null;
 
             // Attempt to execute the prepared statement
             if ($stmt->execute()) {
@@ -131,8 +133,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         }
     }
 
-    // Close connection
-    unset($pdo);
 }
 
 include 'header.php';
@@ -169,8 +169,13 @@ include 'header.php';
                 <div class='form-group'>
                     <label class="form-label">Role</label>
                     <select name="role" class="form-control">
-                        <option value="user">User</option>
-                        <option value="admin">Admin</option>
+                        <?php if ($_SESSION['role'] === 'admin'): ?>
+                            <option value="user">User</option>
+                            <option value="admin">Admin</option>
+                            <option value="reseller">Reseller</option>
+                        <?php elseif ($_SESSION['role'] === 'reseller'): ?>
+                            <option value="user">User</option>
+                        <?php endif; ?>
                     </select>
                 </div>
                 <div class='form-group user-field'>

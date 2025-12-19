@@ -257,6 +257,14 @@ $logo_exists = file_exists($logo_path);
                         <span><?php echo translate('nav_user_management'); ?></span>
                     </a>
                 </li>
+                <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'reseller'): ?>
+                <li class='<?php echo ($current_page == 'reseller.php') ? 'active' : ''; ?>'>
+                    <a href='reseller.php' style="align-items: center;">
+                        <span class="material-icons">dashboard</span>
+                        <span>Reseller Dashboard</span>
+                    </a>
+                </li>
+                <?php endif; ?>
                 <li class='<?php echo ($current_page == 'monitoring.php') ? 'active' : ''; ?>'>
                     <a href='monitoring.php' style="align-items: center;">
                         <span class="material-icons">monitoring</span>

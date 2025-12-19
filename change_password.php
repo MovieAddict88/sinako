@@ -3,7 +3,7 @@ session_start();
 require_once 'auth.php';
 require_once 'db_config.php';
 
-if (!is_admin()) {
+if (!is_admin() && !is_reseller()) {
     header('Location: login.php');
     exit;
 }
@@ -44,10 +44,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($password_err) && empty($confirm_password_err)) {
         $sql = "UPDATE users SET password = :password WHERE id = :id";
+        if (is_reseller()) {
+            $sql .= " AND reseller_id = :reseller_id";
+        }
 
         if ($stmt = $pdo->prepare($sql)) {
             $stmt->bindParam(':password', $param_password, PDO::PARAM_STR);
             $stmt->bindParam(':id', $param_id, PDO::PARAM_INT);
+            if (is_reseller()) {
+                $stmt->bindParam(':reseller_id', $_SESSION['id'], PDO::PARAM_INT);
+            }
 
             $param_password = password_hash($password, PASSWORD_DEFAULT);
             $param_id = $_POST['id'];

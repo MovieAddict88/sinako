@@ -2,8 +2,8 @@
 // Start session
 session_start();
 
-// Check if the user is logged in and is admin, otherwise redirect to login page
-if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true || $_SESSION['role'] !== 'admin') {
+// Check if the user is logged in and is an admin or reseller, otherwise redirect to the login page
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true || !in_array($_SESSION['role'], ['admin', 'reseller'])) {
     header('location: login.php');
     exit;
 }
@@ -62,6 +62,9 @@ if (isset($_POST['id']) && !empty($_POST['id'])) {
     if (empty($username_err) && empty($login_code_err) && empty($first_name_err) && empty($last_name_err) && empty($contact_number_err)) {
         // Prepare an update statement
         $sql = 'UPDATE users SET username = :username, first_name = :first_name, last_name = :last_name, contact_number = :contact_number, login_code = :login_code, device_id = :device_id, role = :role, daily_limit = :daily_limit, billing_month = :billing_month WHERE id = :id';
+        if ($_SESSION['role'] === 'reseller') {
+            $sql .= " AND reseller_id = :reseller_id";
+        }
 
         if ($stmt = $pdo->prepare($sql)) {
             // Bind variables to the prepared statement as parameters
@@ -75,6 +78,9 @@ if (isset($_POST['id']) && !empty($_POST['id'])) {
             $stmt->bindParam(':daily_limit', $param_daily_limit, PDO::PARAM_INT);
             $stmt->bindParam(':billing_month', $param_billing_month, PDO::PARAM_STR);
             $stmt->bindParam(':id', $param_id, PDO::PARAM_INT);
+            if ($_SESSION['role'] === 'reseller') {
+                $stmt->bindParam(':reseller_id', $_SESSION['id'], PDO::PARAM_INT);
+            }
 
             // Set parameters
             $param_username = $username;
@@ -102,8 +108,6 @@ if (isset($_POST['id']) && !empty($_POST['id'])) {
         }
     }
 
-    // Close connection
-    unset($pdo);
 } else {
     // Check existence of id parameter before processing further
     if (isset($_GET['id']) && !empty(trim($_GET['id']))) {
@@ -112,9 +116,15 @@ if (isset($_POST['id']) && !empty($_POST['id'])) {
 
         // Prepare a select statement
         $sql = 'SELECT * FROM users WHERE id = :id';
+        if ($_SESSION['role'] === 'reseller') {
+            $sql .= " AND reseller_id = :reseller_id";
+        }
         if ($stmt = $pdo->prepare($sql)) {
             // Bind variables to the prepared statement as parameters
             $stmt->bindParam(':id', $param_id, PDO::PARAM_INT);
+            if ($_SESSION['role'] === 'reseller') {
+                $stmt->bindParam(':reseller_id', $_SESSION['id'], PDO::PARAM_INT);
+            }
 
             // Set parameters
             $param_id = $id;

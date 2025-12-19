@@ -2,8 +2,8 @@
 // Start session
 session_start();
 
-// Check if the user is logged in and is admin, otherwise redirect to login page
-if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true || $_SESSION['role'] !== 'admin') {
+// Check if the user is logged in and is an admin or reseller, otherwise redirect to the login page
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true || !in_array($_SESSION['role'], ['admin', 'reseller'])) {
     header('location: login.php');
     exit;
 }
@@ -21,10 +21,16 @@ $offset = ($page - 1) * $limit;
 
 // --- Fetch total number of users for pagination ---
 $sql_count = "SELECT COUNT(*) FROM users WHERE role = 'user' AND banned = 0";
+if ($_SESSION['role'] === 'reseller') {
+    $sql_count .= " AND reseller_id = :reseller_id";
+}
 if ($search) {
     $sql_count .= " AND (username LIKE :search OR first_name LIKE :search OR last_name LIKE :search)";
 }
 $stmt_count = $pdo->prepare($sql_count);
+if ($_SESSION['role'] === 'reseller') {
+    $stmt_count->bindValue(':reseller_id', $_SESSION['id']);
+}
 if ($search) {
     $stmt_count->bindValue(':search', '%' . $search . '%');
 }
@@ -35,12 +41,18 @@ $total_pages = ceil($total_users / $limit);
 
 // Fetch users from the database (only regular users, not admin or banned)
 $sql = "SELECT id, username, first_name, last_name, contact_number, login_code, device_id, role, status, payment FROM users WHERE role = 'user' AND banned = 0";
+if ($_SESSION['role'] === 'reseller') {
+    $sql .= " AND reseller_id = :reseller_id";
+}
 if ($search) {
     $sql .= " AND (username LIKE :search OR first_name LIKE :search OR last_name LIKE :search)";
 }
 $sql .= " ORDER BY id DESC LIMIT :limit OFFSET :offset";
 
 $stmt = $pdo->prepare($sql);
+if ($_SESSION['role'] === 'reseller') {
+    $stmt->bindValue(':reseller_id', $_SESSION['id']);
+}
 if ($search) {
     $stmt->bindValue(':search', '%' . $search . '%');
 }
