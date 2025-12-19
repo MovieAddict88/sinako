@@ -93,6 +93,7 @@ include 'header.php';
     </div>
     <div class="card-body">
         <form action="<?php echo htmlspecialchars($_SERVER['REQUEST_URI']); ?>" method="post">
+            <?php if (empty($_SESSION['is_reseller'])): ?>
             <div class="form-group <?php echo (!empty($profile_name_err)) ? 'has-error' : ''; ?>">
                 <label>Profile Name</label>
                 <input type="text" name="profile_name" class="form-control" value="<?php echo htmlspecialchars($profile_name); ?>">
@@ -103,6 +104,10 @@ include 'header.php';
                 <textarea name="profile_content" class="form-control" rows="10"><?php echo htmlspecialchars($profile_content); ?></textarea>
                 <span class="help-block"><?php echo $profile_content_err; ?></span>
             </div>
+            <?php else: ?>
+                <input type="hidden" name="profile_name" value="<?php echo htmlspecialchars($profile_name); ?>">
+                <input type="hidden" name="profile_content" value="<?php echo htmlspecialchars($profile_content); ?>">
+            <?php endif; ?>
             <div class="form-group">
                 <label>Profile Type</label>
                 <select name="profile_type" class="form-control">
