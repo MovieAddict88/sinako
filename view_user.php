@@ -2,8 +2,8 @@
 // Start session
 session_start();
 
-// Check if the user is logged in and is admin, otherwise redirect to login page
-if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true || $_SESSION['role'] !== 'admin') {
+// Check if the user is logged in and is an admin or reseller, otherwise redirect to the login page
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true || !in_array($_SESSION['role'], ['admin', 'reseller'])) {
     header('location: login.php');
     exit;
 }
@@ -20,8 +20,14 @@ if (!$user_id) {
 
 // Fetch user data
 $sql = 'SELECT * FROM users WHERE id = ?';
-$stmt = $pdo->prepare($sql);
-$stmt->execute([$user_id]);
+if ($_SESSION['role'] === 'reseller') {
+    $sql .= ' AND reseller_id = ?';
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$user_id, $_SESSION['id']]);
+} else {
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$user_id]);
+}
 $user = $stmt->fetch();
 
 if (!$user) {

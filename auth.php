@@ -17,3 +17,7 @@ if ($current_page !== 'login.php' && (!isset($_SESSION['loggedin']) || $_SESSION
 function is_admin() {
     return isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
 }
+
+function is_reseller() {
+    return isset($_SESSION['role']) && $_SESSION['role'] === 'reseller';
+}
