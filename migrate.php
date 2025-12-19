@@ -22,7 +22,9 @@ try {
         if (!in_array($migration_name, $executed_migrations)) {
             echo "Running migration: $migration_name\n";
             require_once $file;
-            $pdo->exec($sql);
+            if (isset($sql)) {
+                $pdo->exec($sql);
+            }
 
             // Add to migrations table
             $stmt = $pdo->prepare('INSERT INTO migrations (migration) VALUES (:migration)');

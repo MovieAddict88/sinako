@@ -1,3 +1,5 @@
 <?php
-$sql = 'ALTER TABLE app_updates ADD COLUMN file_size BIGINT;';
+// This column is already created in install.php.
+// We use a no-op statement to ensure the migration is marked as run without causing an error.
+$sql = 'DO 1;';
 ?>

@@ -12,6 +12,9 @@ try {
         $pdo->exec('ALTER TABLE promos ADD COLUMN is_active BOOLEAN');
     }
 
+// Check if the configurations table exists before proceeding
+$stmt = $pdo->query("SHOW TABLES LIKE 'configurations'");
+if ($stmt->rowCount() > 0) {
     // Copy data from configurations to promos
     $stmt = $pdo->query("SELECT * FROM configurations");
     $configurations = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -26,14 +29,16 @@ try {
             $stmt->bindParam(':is_active', $config['is_active'], PDO::PARAM_INT);
             $stmt->execute();
         }
-    }
+        }
 
     // Drop the configurations table
     $pdo->exec('DROP TABLE configurations');
+    }
 
     echo "Data migration completed successfully!";
 
 } catch (PDOException $e) {
     die("Migration failed: " . $e->getMessage());
 }
+unset($sql);
 ?>
