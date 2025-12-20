@@ -11,21 +11,31 @@ if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true || $_SESSION
 // Include the database connection file
 require_once 'db_config.php';
 
-// Check if the user exists and is not admin before banning
+// Determine redirect location
+$redirect_url = 'index.php'; // Default redirect
+if (isset($_REQUEST['redirect'])) {
+    // Basic validation for local redirect
+    $provided_redirect = $_REQUEST['redirect'];
+    if (filter_var($provided_redirect, FILTER_VALIDATE_URL, FILTER_FLAG_PATH_REQUIRED) && strpos($provided_redirect, '.php') !== false) {
+        $redirect_url = $provided_redirect;
+    }
+}
+
+// Check if the user exists and is not admin before deleting
 if (isset($_GET['id']) && !empty(trim($_GET['id']))) {
     $id = trim($_GET['id']);
-    
+
     // Check if user is admin
     $check_sql = 'SELECT role FROM users WHERE id = :id';
     if ($check_stmt = $pdo->prepare($check_sql)) {
         $check_stmt->bindParam(':id', $param_id, PDO::PARAM_INT);
         $param_id = $id;
-        
+
         if ($check_stmt->execute()) {
             if ($check_stmt->rowCount() == 1) {
                 $user = $check_stmt->fetch();
                 if ($user['role'] === 'admin') {
-                    header('location: index.php?message=Admin user cannot be deleted.');
+                    header('location: ' . $redirect_url . '?message=Admin user cannot be deleted.');
                     exit();
                 }
             }
@@ -34,7 +44,7 @@ if (isset($_GET['id']) && !empty(trim($_GET['id']))) {
     }
 }
 
-// Process ban operation after confirmation
+// Process delete operation after confirmation
 if (isset($_POST['id']) && !empty($_POST['id'])) {
     $user_id = trim($_POST['id']);
 
@@ -42,16 +52,16 @@ if (isset($_POST['id']) && !empty($_POST['id'])) {
     $check_sql = 'SELECT role FROM users WHERE id = :id';
     if ($check_stmt = $pdo->prepare($check_sql)) {
         $check_stmt->bindParam(':id', $user_id, PDO::PARAM_INT);
-        
+
         if ($check_stmt->execute()) {
             if ($check_stmt->rowCount() == 1) {
                 $user = $check_stmt->fetch();
                 if ($user['role'] === 'admin') {
-                    header('location: index.php?message=Admin user cannot be deleted.');
+                    header('location: ' . $redirect_url . '?message=Admin user cannot be deleted.');
                     exit();
                 }
             } else {
-                header('location: index.php?message=User not found.');
+                header('location: ' . $redirect_url . '?message=User not found.');
                 exit();
             }
         }
@@ -78,7 +88,7 @@ if (isset($_POST['id']) && !empty($_POST['id'])) {
         $pdo->commit();
 
         // User deleted successfully. Redirect to landing page
-        header('location: index.php');
+        header('location: ' . $redirect_url);
         exit();
 
     } catch (Exception $e) {
@@ -97,7 +107,7 @@ if (isset($_POST['id']) && !empty($_POST['id'])) {
     // Check existence of id parameter
     if (empty(trim($_GET['id']))) {
         // URL doesn't contain id parameter. Redirect to error page
-        header('location: index.php');
+        header('location: ' . $redirect_url);
         exit();
     }
 }
@@ -117,9 +127,9 @@ if (isset($_POST['id']) && !empty($_POST['id'])) {
         <div class="page-header">
             <h2>Delete User</h2>
             <div class="page-actions">
-                <a class='btn btn-secondary' href='index.php'>
+                <a class='btn btn-secondary' href='<?php echo htmlspecialchars($redirect_url); ?>'>
                     <span class="material-icons">arrow_back</span>
-                    Back to Users
+                    Back
                 </a>
             </div>
         </div>
@@ -128,11 +138,12 @@ if (isset($_POST['id']) && !empty($_POST['id'])) {
             <div class="card-body">
             <form action='delete_user.php' method='post'>
                     <div class='alert alert-danger'>
-                         <input type='hidden' name='id' value='<?php echo htmlspecialchars(trim($_GET['id'])); ?>'/>
-                    <p>Are you sure you want to delete this user? This action is irreversible and will permanently remove all their data.</p>
+                        <input type='hidden' name='id' value='<?php echo htmlspecialchars(trim($_GET['id'])); ?>'/>
+                        <input type='hidden' name='redirect' value='<?php echo htmlspecialchars($redirect_url); ?>'/>
+                        <p>Are you sure you want to delete this user? This action is irreversible and will permanently remove all their data.</p>
                         <div class="form-group" style="margin-top: 20px;">
-                        <input type='submit' value='Yes, Delete User' class='btn btn-danger'>
-                            <a class='btn btn-link' href='index.php'>Cancel</a>
+                            <input type='submit' value='Yes, Delete User' class='btn btn-danger'>
+                            <a class='btn btn-link' href='<?php echo htmlspecialchars($redirect_url); ?>'>Cancel</a>
                         </div>
                     </div>
                 </form>

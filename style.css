@@ -182,7 +182,6 @@ body {
 
 .card-body {
   padding: 24px;
-  overflow-x: auto;
 }
 
 /* Tables */
@@ -195,6 +194,7 @@ body {
   display: block;
   width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .table {
