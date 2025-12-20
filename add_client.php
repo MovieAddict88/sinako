@@ -37,8 +37,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
             // Create the new client
             $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-            $stmt = $pdo->prepare("INSERT INTO users (username, password, reseller_id, expiration_date) VALUES (:username, :password, :reseller_id, :expiration_date)");
-            $stmt->execute(['username' => $username, 'password' => $hashed_password, 'reseller_id' => $reseller_id, 'expiration_date' => $expiration_date]);
+            $stmt = $pdo->prepare("INSERT INTO users (username, password, reseller_id, expiration_date, first_name, last_name, address, contact_number) VALUES (:username, :password, :reseller_id, :expiration_date, :first_name, :last_name, :address, :contact_number)");
+            $stmt->execute([
+                'username' => $username,
+                'password' => $hashed_password,
+                'reseller_id' => $reseller_id,
+                'expiration_date' => $expiration_date,
+                'first_name' => 'Client',
+                'last_name' => 'User',
+                'address' => 'N/A',
+                'contact_number' => 'N/A'
+            ]);
             $client_id = $pdo->lastInsertId();
 
             // Record the sale
