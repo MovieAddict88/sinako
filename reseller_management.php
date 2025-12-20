@@ -53,16 +53,16 @@ include 'header.php';
                         <td><?php echo $user['is_reseller'] ? $user['client_count'] : 'N/A'; ?></td>
                         <td><?php echo $user['is_reseller'] ? '₱' . number_format($user['total_commission'] ?? 0, 2) : 'N/A'; ?></td>
                         <td>
-                            <div class="btn-group-vertical">
-                                <form action="toggle_reseller.php" method="post">
+                            <div class="d-flex flex-column">
+                                <form action="toggle_reseller.php" method="post" class="mb-1">
                                     <input type="hidden" name="id" value="<?php echo $user['id']; ?>">
                                     <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
-                                    <button type="submit" class="btn <?php echo $user['is_reseller'] ? 'btn-danger' : 'btn-success'; ?> btn-block mb-1">
+                                    <button type="submit" class="btn btn-block <?php echo $user['is_reseller'] ? 'btn-danger' : 'btn-success'; ?>">
                                         <?php echo $user['is_reseller'] ? 'Remove Reseller' : 'Make Reseller'; ?>
                                     </button>
                                 </form>
                                 <?php if ($user['is_reseller']): ?>
-                                    <a href="view_reseller.php?id=<?php echo $user['reseller_id']; ?>" class="btn btn-info btn-block mb-1">View</a>
+                                    <a href="view_reseller.php?id=<?php echo $user['reseller_id']; ?>" class="btn btn-secondary btn-block mb-1">View</a>
                                     <a href="reseller_dashboard.php?user_id=<?php echo $user['id']; ?>" class="btn btn-primary btn-block">Dashboard</a>
                                 <?php endif; ?>
                             </div>
