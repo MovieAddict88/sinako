@@ -326,6 +326,11 @@ body {
   text-decoration: underline;
 }
 
+.btn-responsive {
+    font-size: clamp(0.75rem, 2.5vw, 0.9rem);
+    padding: clamp(8px, 1.5vw, 10px) clamp(12px, 2vw, 16px);
+}
+
 /* Form Styles */
 .form-container {
   max-width: 600px;
