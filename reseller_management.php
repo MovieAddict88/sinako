@@ -66,7 +66,7 @@ include 'header.php';
                                         </form>
                                         <a href="view_reseller.php?id=<?php echo $user['reseller_id']; ?>" class="btn btn-secondary mr-2 btn-responsive">View</a>
                                         <a href="reseller_dashboard.php?user_id=<?php echo $user['id']; ?>" class="btn btn-primary mr-2 btn-responsive">Dashboard</a>
-                                        <form action="delete_user.php" method="post" onsubmit="return confirm('Are you sure you want to delete this reseller?');">
+                                        <form action="delete_reseller.php" method="post" onsubmit="return confirm('Are you sure you want to delete this reseller?');">
                                             <input type="hidden" name="id" value="<?php echo $user['id']; ?>">
                                             <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
                                             <input type="hidden" name="redirect" value="reseller_management.php">
