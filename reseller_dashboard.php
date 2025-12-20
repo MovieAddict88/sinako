@@ -3,14 +3,30 @@
 session_start();
 require_once 'db_config.php';
 
+function is_admin() {
+    return isset($_SESSION['role']) && $_SESSION['role'] === 'admin';
+}
+
+// Check if the user is an admin and a user_id is provided in the URL
+if (is_admin() && isset($_GET['user_id'])) {
+    $reseller_id = $_GET['user_id'];
+    // Fetch the username of the reseller being viewed
+    $stmt = $pdo->prepare("SELECT username FROM users WHERE id = :id");
+    $stmt->execute(['id' => $reseller_id]);
+    $viewed_reseller = $stmt->fetch();
+    $viewed_username = $viewed_reseller ? $viewed_reseller['username'] : 'Unknown Reseller';
+}
 // Check if the user is logged in and is a reseller, otherwise redirect to login page
-if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true || empty($_SESSION["is_reseller"])) {
+else if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true || empty($_SESSION["is_reseller"])) {
     header("location: login.php");
     exit;
+} else {
+    // Fetch reseller's data from session
+    $reseller_id = $_SESSION["id"];
+    $viewed_username = $_SESSION["username"];
 }
 
 // Fetch reseller's data
-$reseller_id = $_SESSION["id"];
 $stmt = $pdo->prepare("SELECT credits FROM users WHERE id = :id");
 $stmt->execute(['id' => $reseller_id]);
 $reseller = $stmt->fetch();
@@ -67,7 +83,7 @@ $sales = $stmt->fetchAll();
 <body>
     <div class="container wrapper">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="my-5">Hi, <b><?php echo htmlspecialchars($_SESSION["username"]); ?></b>. Welcome to your reseller dashboard.</h1>
+            <h1 class="my-5">Hi, <b><?php echo htmlspecialchars($viewed_username); ?></b>. Welcome to your reseller dashboard.</h1>
             <a href="logout.php" class="btn btn-danger">Sign Out</a>
         </div>
 
