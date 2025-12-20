@@ -182,12 +182,19 @@ body {
 
 .card-body {
   padding: 24px;
+  overflow-x: auto;
 }
 
 /* Tables */
 .table-container {
   overflow-x: auto;
   border-radius: var(--border-radius);
+}
+
+.table-responsive {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
 }
 
 .table {
@@ -324,6 +331,11 @@ body {
   color: var(--primary-dark);
   transform: none;
   text-decoration: underline;
+}
+
+.btn-responsive {
+    font-size: clamp(0.75rem, 2.5vw, 0.9rem);
+    padding: clamp(8px, 1.5vw, 10px) clamp(12px, 2vw, 16px);
 }
 
 /* Form Styles */
