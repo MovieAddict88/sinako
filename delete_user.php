@@ -35,7 +35,11 @@ if (isset($_GET['id']) && !empty(trim($_GET['id']))) {
 }
 
 // Process ban operation after confirmation
-if (isset($_POST['id']) && !empty($_POST['id'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['id']) && !empty($_POST['id'])) {
+    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        die('CSRF token validation failed.');
+    }
+
     $user_id = trim($_POST['id']);
 
     // Check if user is admin before deleting
@@ -68,6 +72,12 @@ if (isset($_POST['id']) && !empty($_POST['id'])) {
         $stmt_terminate->bindParam(':user_id', $user_id, PDO::PARAM_INT);
         $stmt_terminate->execute();
 
+        // Delete from resellers table if the user is a reseller
+        $sql_delete_reseller = 'DELETE FROM resellers WHERE user_id = :user_id';
+        $stmt_delete_reseller = $pdo->prepare($sql_delete_reseller);
+        $stmt_delete_reseller->bindParam(':user_id', $user_id, PDO::PARAM_INT);
+        $stmt_delete_reseller->execute();
+
         // Then, delete the user from the users table
         $sql_delete = 'DELETE FROM users WHERE id = :id';
         $stmt_delete = $pdo->prepare($sql_delete);
@@ -78,7 +88,8 @@ if (isset($_POST['id']) && !empty($_POST['id'])) {
         $pdo->commit();
 
         // User deleted successfully. Redirect to landing page
-        header('location: index.php');
+        $redirect_url = isset($_POST['redirect']) ? $_POST['redirect'] : 'index.php';
+        header('location: ' . $redirect_url);
         exit();
 
     } catch (Exception $e) {
