@@ -2,8 +2,20 @@
 // Start session
 session_start();
 
-// Check if the user is logged in and is admin, otherwise redirect to login page
-if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true || $_SESSION['role'] !== 'admin') {
+// Check if the user is logged in, otherwise redirect to login page
+if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true) {
+    header('location: login.php');
+    exit;
+}
+
+// Check if the user is a reseller
+if (isset($_SESSION['is_reseller']) && $_SESSION['is_reseller'] == 1) {
+    header('location: reseller_dashboard.php');
+    exit;
+}
+
+// Check if the user is an admin
+if ($_SESSION['role'] !== 'admin') {
     header('location: login.php');
     exit;
 }

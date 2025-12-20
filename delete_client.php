@@ -1,84 +1,64 @@
 <?php
-// Start session
+// Initialize the session
 session_start();
+require_once 'db_config.php';
 
 // Check if the user is logged in and is a reseller, otherwise redirect to login page
-if (!isset($_SESSION['loggedin']) || $_SESSION['loggedin'] !== true || !isset($_SESSION['is_reseller']) || $_SESSION['is_reseller'] !== true) {
-    header('location: login.php');
+if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true || empty($_SESSION["is_reseller"])) {
+    header("location: login.php");
     exit;
 }
 
-// Include the database connection file
-require_once 'db_config.php';
+$reseller_id = $_SESSION["id"];
+$client_id = $_GET['id'] ?? null;
 
-// Get reseller information
-$reseller_id = $_SESSION['reseller_id'];
-
-// Check existence of id parameter before processing further
-if (isset($_GET['id']) && !empty(trim($_GET['id']))) {
-    // Get URL parameter
-    $id =  trim($_GET['id']);
-
-    try {
-        // Verify client belongs to reseller
-        $sql_check = 'SELECT COUNT(*) FROM reseller_clients WHERE client_id = :client_id AND reseller_id = :reseller_id';
-        $stmt_check = $pdo->prepare($sql_check);
-        $stmt_check->bindParam(':client_id', $id, PDO::PARAM_INT);
-        $stmt_check->bindParam(':reseller_id', $reseller_id, PDO::PARAM_INT);
-        $stmt_check->execute();
-        $count = $stmt_check->fetchColumn();
-
-        if ($count == 1) {
-            $pdo->beginTransaction();
-
-            // Delete from reseller_clients table
-            $sql = 'DELETE FROM reseller_clients WHERE reseller_id = :reseller_id AND client_id = :client_id';
-
-            if ($stmt = $pdo->prepare($sql)) {
-                // Bind variables to the prepared statement as parameters
-                $stmt->bindParam(':reseller_id', $reseller_id, PDO::PARAM_INT);
-                $stmt->bindParam(':client_id', $id, PDO::PARAM_INT);
-
-                // Attempt to execute the prepared statement
-                $stmt->execute();
-
-                // Close statement
-                unset($stmt);
-            }
-
-            // Delete from users table
-            $sql = 'DELETE FROM users WHERE id = :id';
-
-        if ($stmt = $pdo->prepare($sql)) {
-            // Bind variables to the prepared statement as parameters
-            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-
-            // Attempt to execute the prepared statement
-            $stmt->execute();
-
-            // Close statement
-            unset($stmt);
-        }
-
-            $pdo->commit();
-
-            // Redirect to client management page
-            header('location: reseller_clients.php');
-            exit;
-        } else {
-            // Client does not belong to reseller, redirect
-            header('location: reseller_clients.php');
-            exit();
-        }
-    } catch (Exception $e) {
-        $pdo->rollBack();
-        die("An error occurred: " . $e->getMessage());
-    }
-
-    // Close connection
-    unset($pdo);
-} else {
-    // URL doesn't contain id parameter. Redirect to error page
-    header('location: reseller_clients.php');
-    exit();
+if (!$client_id) {
+    header("location: reseller_dashboard.php");
+    exit;
 }
+
+// Fetch client's data
+$stmt = $pdo->prepare("SELECT * FROM users WHERE id = :id AND reseller_id = :reseller_id");
+$stmt->execute(['id' => $client_id, 'reseller_id' => $reseller_id]);
+$client = $stmt->fetch();
+
+if (!$client) {
+    header("location: reseller_dashboard.php");
+    exit;
+}
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    try {
+        $stmt = $pdo->prepare("DELETE FROM users WHERE id = :id");
+        $stmt->execute(['id' => $client_id]);
+        header("location: reseller_dashboard.php");
+        exit;
+    } catch (Exception $e) {
+        $error = "Error: " . $e->getMessage();
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Delete Client</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Delete Client</h2>
+        <?php if (!empty($error)): ?>
+            <div class="alert alert-danger"><?php echo $error; ?></div>
+        <?php endif; ?>
+        <p>Are you sure you want to delete the client "<?php echo htmlspecialchars($client['username']); ?>"?</p>
+        <form action="delete_client.php?id=<?php echo $client_id; ?>" method="post">
+            <div class="form-group">
+                <input type="submit" class="btn btn-danger" value="Yes, Delete">
+                <a href="reseller_dashboard.php" class="btn btn-secondary">No, Cancel</a>
+            </div>
+        </form>
+    </div>
+</body>
+</html>
