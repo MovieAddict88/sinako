@@ -94,7 +94,7 @@ $sales = $stmt->fetchAll();
 
         <div class="row">
             <div class="col-md-6"><div class="card"><div class="card-header">Credit Balance</div><div class="card-body">
-                <h5 class="card-title display-4">$<?php echo number_format($credit_balance, 2); ?></h5>
+                <h5 class="card-title display-4">₱<?php echo number_format($credit_balance, 2); ?></h5>
             </div></div></div>
             <div class="col-md-6"><div class="card"><div class="card-header">Add Credits</div><div class="card-body">
                 <a href="add_credits.php" class="btn btn-primary">Add Credits</a>
@@ -143,7 +143,7 @@ $sales = $stmt->fetchAll();
                     <tr>
                         <td><?php echo htmlspecialchars($sale['username']); ?></td>
                         <td><?php echo date('Y-m-d H:i', strtotime($sale['sale_date'])); ?></td>
-                        <td>$<?php echo number_format($sale['amount'], 2); ?></td>
+                        <td>₱<?php echo number_format($sale['amount'], 2); ?></td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>

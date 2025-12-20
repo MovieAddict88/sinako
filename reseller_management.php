@@ -51,7 +51,7 @@ include 'header.php';
                         <td><?php echo htmlspecialchars($user['username']); ?></td>
                         <td><?php echo $user['is_reseller'] ? 'Reseller' : 'User'; ?></td>
                         <td><?php echo $user['is_reseller'] ? $user['client_count'] : 'N/A'; ?></td>
-                        <td><?php echo $user['is_reseller'] ? '$' . number_format($user['total_commission'] ?? 0, 2) : 'N/A'; ?></td>
+                        <td><?php echo $user['is_reseller'] ? '₱' . number_format($user['total_commission'] ?? 0, 2) : 'N/A'; ?></td>
                         <td>
                             <form action="toggle_reseller.php" method="post" style="display: inline;">
                                 <input type="hidden" name="id" value="<?php echo $user['id']; ?>">
