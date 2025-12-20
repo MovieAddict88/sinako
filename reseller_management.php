@@ -56,6 +56,8 @@ include 'header.php';
                             <td>
                                 <div class="d-flex align-items-center" style="gap: 5px;">
                                     <?php if ($user['is_reseller']): ?>
+                                        <a href="reseller_dashboard.php?user_id=<?php echo $user['id']; ?>" class="btn btn-sm btn-primary">Dashboard</a>
+                                        <a href="view_reseller.php?id=<?php echo $user['reseller_id']; ?>" class="btn btn-sm btn-secondary">View</a>
                                         <a href="edit_reseller.php?id=<?php echo $user['id']; ?>" class="btn btn-sm btn-info">Edit</a>
                                         <a href="delete_reseller.php?id=<?php echo $user['id']; ?>" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this reseller?');">Delete</a>
                                     <?php else: ?>
