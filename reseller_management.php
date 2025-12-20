@@ -10,7 +10,7 @@ if (!is_admin()) {
 
 $stmt = $pdo->prepare("
     SELECT u.id, u.username, u.is_reseller, r.id as reseller_id,
-           (SELECT COUNT(*) FROM reseller_clients rc WHERE rc.reseller_id = r.id) as client_count,
+           (SELECT COUNT(*) FROM users c WHERE c.reseller_id = u.id) as client_count,
            (SELECT SUM(c.commission_earned) FROM commissions c WHERE c.reseller_id = r.id) as total_commission
     FROM users u
     LEFT JOIN resellers r ON u.id = r.user_id

@@ -21,7 +21,7 @@ if (!$reseller_id) {
 
 // Fetch reseller information
 $stmt = $pdo->prepare("
-    SELECT u.username, r.company_name, r.logo_path, r.primary_color, r.secondary_color
+    SELECT u.id as reseller_user_id, u.username, r.company_name, r.logo_path, r.primary_color, r.secondary_color
     FROM users u
     JOIN resellers r ON u.id = r.user_id
     WHERE r.id = :reseller_id
@@ -34,10 +34,9 @@ $reseller = $stmt->fetch(PDO::FETCH_ASSOC);
 $stmt = $pdo->prepare("
     SELECT u.id, u.username, u.first_name, u.last_name, u.contact_number, u.daily_limit, u.data_usage
     FROM users u
-    JOIN reseller_clients rc ON u.id = rc.client_id
-    WHERE rc.reseller_id = :reseller_id
+    WHERE u.reseller_id = :reseller_user_id
 ");
-$stmt->bindParam(':reseller_id', $reseller_id, PDO::PARAM_INT);
+$stmt->bindParam(':reseller_user_id', $reseller['reseller_user_id'], PDO::PARAM_INT);
 $stmt->execute();
 $clients = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
