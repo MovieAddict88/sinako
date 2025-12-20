@@ -55,24 +55,22 @@ include 'header.php';
                             <td><?php echo htmlspecialchars($user['contact_number']); ?></td>
                             <td><?php echo '₱' . number_format($user['credits'] ?? 0, 2); ?></td>
                             <td>
-                                <div class="d-flex flex-column">
+                                <div class="d-flex align-items-center" style="gap: 0.5rem;">
                                     <?php if ($user['is_reseller']): ?>
-                                        <form action="toggle_reseller.php" method="post" class="mb-1">
+                                        <a href="edit_reseller.php?id=<?php echo $user['id']; ?>" class="btn btn-info btn-sm">Edit</a>
+                                        <a href="delete_user.php?id=<?php echo $user['id']; ?>&redirect=reseller_management.php" class="btn btn-danger btn-sm">Delete</a>
+                                        <form action="toggle_reseller.php" method="post" class="mb-0">
                                             <input type="hidden" name="id" value="<?php echo $user['id']; ?>">
                                             <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
-                                            <button type="submit" class="btn btn-block btn-danger btn-responsive">
-                                                Remove Reseller
-                                            </button>
+                                            <button type="submit" class="btn btn-warning btn-sm">Remove Reseller</button>
                                         </form>
-                                        <a href="view_reseller.php?id=<?php echo $user['reseller_id']; ?>" class="btn btn-secondary btn-block mb-1 btn-responsive">View</a>
-                                        <a href="reseller_dashboard.php?user_id=<?php echo $user['id']; ?>" class="btn btn-primary btn-block btn-responsive">Dashboard</a>
+                                        <a href="view_reseller.php?id=<?php echo $user['reseller_id']; ?>" class="btn btn-secondary btn-sm">View</a>
+                                        <a href="reseller_dashboard.php?user_id=<?php echo $user['id']; ?>" class="btn btn-primary btn-sm">Dashboard</a>
                                     <?php else: ?>
-                                        <form action="toggle_reseller.php" method="post" class="mb-1">
+                                        <form action="toggle_reseller.php" method="post" class="mb-0">
                                             <input type="hidden" name="id" value="<?php echo $user['id']; ?>">
                                             <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
-                                            <button type="submit" class="btn btn-block btn-success btn-responsive">
-                                                Make Reseller
-                                            </button>
+                                            <button type="submit" class="btn btn-success btn-sm">Make Reseller</button>
                                         </form>
                                     <?php endif; ?>
                                 </div>

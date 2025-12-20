@@ -68,19 +68,28 @@ try {
         echo "Migration: payment column added to users table.<br>";
     }
 
-    // Create sales table
-    $stmt = $pdo->query("SHOW TABLES LIKE 'sales'");
+    // Create resellers table
+    $stmt = $pdo->query("SHOW TABLES LIKE 'resellers'");
     if ($stmt->rowCount() == 0) {
-        $pdo->exec("CREATE TABLE sales (
+        $pdo->exec("CREATE TABLE resellers (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        );");
+        echo "Migration: resellers table created.<br>";
+    }
+
+    // Create commissions table
+    $stmt = $pdo->query("SHOW TABLES LIKE 'commissions'");
+    if ($stmt->rowCount() == 0) {
+        $pdo->exec("CREATE TABLE commissions (
             id INT AUTO_INCREMENT PRIMARY KEY,
             reseller_id INT NOT NULL,
-            client_id INT NOT NULL,
-            amount DECIMAL(10, 2) NOT NULL,
-            sale_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (reseller_id) REFERENCES users(id),
-            FOREIGN KEY (client_id) REFERENCES users(id)
+            commission_earned DECIMAL(10, 2) NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (reseller_id) REFERENCES resellers(id) ON DELETE CASCADE
         );");
-        echo "Migration: sales table created.<br>";
+        echo "Migration: commissions table created.<br>";
     }
 } catch (PDOException $e) {
     die("Migration failed: " . $e->getMessage());
