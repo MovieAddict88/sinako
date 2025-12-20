@@ -68,16 +68,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                             $_SESSION['role'] = $row['role'];
                             $_SESSION['is_reseller'] = $row['is_reseller'];
 
-                            if ($row['is_reseller']) {
-                                $sql_reseller = 'SELECT id FROM resellers WHERE user_id = ?';
-                                $stmt_reseller = $pdo->prepare($sql_reseller);
-                                $stmt_reseller->execute([$id]);
-                                $reseller = $stmt_reseller->fetch();
-                                $_SESSION['reseller_id'] = $reseller['id'];
-                            }
-
                             // Redirect user to welcome page
-                            header('location: dashboard.php');
+                            header('location: index.php');
                         } else {
                             // Display an error message if password is not valid
                             $password_err = translate('invalid_password');
