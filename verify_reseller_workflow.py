@@ -5,7 +5,8 @@ def run(playwright):
     # Reset database and create reseller
     os.system("mysql -u cornerst_vpn -pcornerst_vpn cornerst_vpn < setup.sql")
     os.system("php install.php")
-    os.system("php -r 'require_once \"db_config.php\"; $username = \"reseller\"; $password = password_hash(\"reseller123\", PASSWORD_DEFAULT); $stmt = $pdo->prepare(\"INSERT INTO users (username, password, is_reseller, credits) VALUES (?, ?, 1, 100.00)\"); $stmt->execute([$username, $password]);'")
+    os.system("php migrate.php")
+    os.system("php -r 'require_once \"db_config.php\"; $username = \"reseller\"; $password = password_hash(\"reseller123\", PASSWORD_DEFAULT); $first_name = \"Test\"; $last_name = \"Reseller\"; $address = \"123 Test St\"; $contact_number = \"555-1234\"; $stmt = $pdo->prepare(\"INSERT INTO users (username, password, is_reseller, credits, first_name, last_name, address, contact_number) VALUES (?, ?, 1, 100.00, ?, ?, ?, ?)\"); $stmt->execute([$username, $password, $first_name, $last_name, $address, $contact_number]);'")
 
     browser = playwright.chromium.launch(headless=True)
     context = browser.new_context()
@@ -36,7 +37,7 @@ def run(playwright):
         # Verify client was added
         expect(client_management_table.locator("tr:has-text('testclient')")).to_be_visible()
         expect(page.locator(".card", has_text="Total Clients").locator(".card-text")).to_have_text("1")
-        expect(page.locator(".card", has_text="Credit Balance").locator(".card-title")).to_have_text("$90.00")
+        expect(page.locator(".card", has_text="Credit Balance").locator(".card-title")).to_have_text("₱90.00")
         print("Client verification successful.")
 
         # Edit the client
