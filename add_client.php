@@ -12,6 +12,9 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true || empty($_S
 
 $reseller_id = $_SESSION["id"];
 $client_cost = get_setting($pdo, 'client_cost');
+if (is_null($client_cost)) {
+    $client_cost = 0.00; // Default value if not set
+}
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $username = trim($_POST["username"]);

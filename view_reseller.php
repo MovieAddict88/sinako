@@ -34,8 +34,7 @@ $reseller = $stmt->fetch(PDO::FETCH_ASSOC);
 $stmt = $pdo->prepare("
     SELECT u.id, u.username, u.first_name, u.last_name, u.contact_number, u.daily_limit, u.data_usage
     FROM users u
-    JOIN reseller_clients rc ON u.id = rc.client_id
-    WHERE rc.reseller_id = :reseller_id
+    WHERE u.reseller_id = :reseller_id
 ");
 $stmt->bindParam(':reseller_id', $reseller_id, PDO::PARAM_INT);
 $stmt->execute();
