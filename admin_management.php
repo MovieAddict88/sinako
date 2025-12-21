@@ -17,6 +17,12 @@ include 'header.php';
 
 <div class="page-header">
     <h2>Admin Management</h2>
+    <div class="page-actions">
+        <a href='add_admin.php' class='btn btn-success'>
+            <span class="material-icons">person_add</span>
+            Add New Admin
+        </a>
+    </div>
 </div>
 
 <div class="card">
