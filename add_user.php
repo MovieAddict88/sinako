@@ -143,17 +143,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $param_billing_month = !empty($_POST['billing_month']) ? $_POST['billing_month'] : null;
 
             // Attempt to execute the prepared statement
-            if ($stmt->execute()) {
-                // Redirect to the appropriate management page
-                if ($_POST['role'] === 'admin') {
-                    header('location: admin_management.php');
-                } elseif ($_POST['role'] === 'reseller') {
-                    header('location: reseller_management.php');
+            try {
+                $pdo->beginTransaction();
+                if ($stmt->execute()) {
+                    if ($_POST['role'] === 'reseller') {
+                        $user_id = $pdo->lastInsertId();
+                        $sql_reseller = 'INSERT INTO resellers (user_id) VALUES (:user_id)';
+                        if ($stmt_reseller = $pdo->prepare($sql_reseller)) {
+                            $stmt_reseller->bindParam(':user_id', $user_id, PDO::PARAM_INT);
+                            $stmt_reseller->execute();
+                            unset($stmt_reseller);
+                        }
+                    }
+                    $pdo->commit();
+                    // Redirect to the appropriate management page
+                    if ($_POST['role'] === 'admin') {
+                        header('location: admin_management.php');
+                    } elseif ($_POST['role'] === 'reseller') {
+                        header('location: reseller_management.php');
+                    } else {
+                        header('location: user_management.php');
+                    }
+                    exit;
                 } else {
-                    header('location: user_management.php');
+                    $pdo->rollBack();
+                    echo 'Something went wrong. Please try again later.';
                 }
-                exit;
-            } else {
+            } catch (Exception $e) {
+                $pdo->rollBack();
                 echo 'Something went wrong. Please try again later.';
             }
 
