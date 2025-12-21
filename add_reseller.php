@@ -89,7 +89,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Check input errors before inserting in database
     if (empty($username_err) && empty($password_err) && empty($first_name_err) && empty($last_name_err) && empty($contact_number_err) && empty($address_err)) {
         // Prepare an insert statement
-        $sql = 'INSERT INTO users (username, password, first_name, last_name, contact_number, address, credits, login_code, role, daily_limit, promo_id, billing_month) VALUES (:username, :password, :first_name, :last_name, :contact_number, :address, :credits, :login_code, :role, :daily_limit, :promo_id, :billing_month)';
+        $sql = 'INSERT INTO users (username, password, first_name, last_name, contact_number, address, credits, login_code, role, is_reseller, daily_limit, promo_id, billing_month) VALUES (:username, :password, :first_name, :last_name, :contact_number, :address, :credits, :login_code, :role, 1, :daily_limit, :promo_id, :billing_month)';
 
         if ($stmt = $pdo->prepare($sql)) {
             // Bind variables to the prepared statement as parameters
@@ -120,16 +120,33 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $param_promo_id = !empty($_POST['promo_id']) ? $_POST['promo_id'] : null;
             $param_billing_month = !empty($_POST['billing_month']) ? $_POST['billing_month'] : null;
 
-            // Attempt to execute the prepared statement
             try {
+                $pdo->beginTransaction();
+
                 if ($stmt->execute()) {
-                    header('location: reseller_management.php');
-                    exit;
-                } else {
-                    echo 'Something went wrong. Please try again later.';
+                    $user_id = $pdo->lastInsertId();
+                    $sql_reseller = 'INSERT INTO resellers (user_id) VALUES (:user_id)';
+                    if ($stmt_reseller = $pdo->prepare($sql_reseller)) {
+                        $stmt_reseller->bindParam(':user_id', $user_id, PDO::PARAM_INT);
+                        if ($stmt_reseller->execute()) {
+                            $pdo->commit();
+                            header('location: reseller_management.php');
+                            exit;
+                        }
+                    }
                 }
+
+                $pdo->rollBack();
+                $_SESSION['error'] = 'Something went wrong creating the reseller. Please try again.';
+                header('location: add_reseller.php');
+                exit;
+
             } catch (Exception $e) {
-                echo 'Something went wrong. Please try again later.';
+                $pdo->rollBack();
+                error_log($e->getMessage());
+                $_SESSION['error'] = 'An unexpected error occurred. Please try again later.';
+                header('location: add_reseller.php');
+                exit;
             }
 
             // Close statement
@@ -161,6 +178,12 @@ include 'header.php';
     <div class="card-body">
         <div class="form-container">
             <p>Please fill this form to create a new reseller user.</p>
+            <?php
+            if (isset($_SESSION['error'])) {
+                echo '<div class="alert alert-danger">' . $_SESSION['error'] . '</div>';
+                unset($_SESSION['error']);
+            }
+            ?>
             <form action='add_reseller.php' method='post'>
                 <div class='form-group'>
                     <label class="form-label">Username</label>
