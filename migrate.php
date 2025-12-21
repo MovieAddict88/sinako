@@ -82,6 +82,17 @@ try {
         );");
         echo "Migration: sales table created.<br>";
     }
+
+    // Create resellers table
+    $stmt = $pdo->query("SHOW TABLES LIKE 'resellers'");
+    if ($stmt->rowCount() == 0) {
+        $pdo->exec("CREATE TABLE resellers (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            user_id INT NOT NULL,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        );");
+        echo "Migration: resellers table created.<br>";
+    }
 } catch (PDOException $e) {
     die("Migration failed: " . $e->getMessage());
 }
