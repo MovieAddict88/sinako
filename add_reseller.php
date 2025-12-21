@@ -65,12 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $first_name = trim($_POST['first_name']);
     }
 
-    // Validate last name
-    if (empty(trim($_POST['last_name']))) {
-        $last_name_err = 'Please enter a last name.';
-    } else {
-        $last_name = trim($_POST['last_name']);
-    }
+    $last_name = '';
 
     // Validate contact number
     if (empty(trim($_POST['contact_number']))) {
@@ -79,8 +74,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $contact_number = trim($_POST['contact_number']);
     }
 
+    if (empty(trim($_POST['address']))) {
+        $address_err = 'Please enter an address.';
+    } else {
+        $address = trim($_POST['address']);
+    }
+    $credits = trim($_POST['credits']);
+
+    $_POST['limit_value'] = 0;
+    $_POST['limit_unit'] = 'MB';
+    $_POST['promo_id'] = null;
+    $_POST['billing_month'] = null;
+
     // Check input errors before inserting in database
-    if (empty($username_err) && empty($password_err) && empty($first_name_err) && empty($last_name_err) && empty($contact_number_err)) {
+    if (empty($username_err) && empty($password_err) && empty($first_name_err) && empty($last_name_err) && empty($contact_number_err) && empty($address_err)) {
         // Prepare an insert statement
         $sql = 'INSERT INTO users (username, password, first_name, last_name, contact_number, address, credits, login_code, role, daily_limit, promo_id, billing_month) VALUES (:username, :password, :first_name, :last_name, :contact_number, :address, :credits, :login_code, :role, :daily_limit, :promo_id, :billing_month)';
 
@@ -108,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $param_address = $address;
             $param_credits = $credits;
             $param_login_code = generate_unique_login_code($pdo);
-            $param_role = 'user';
+            $param_role = 'reseller';
             $param_daily_limit = convert_to_bytes($_POST['limit_value'], $_POST['limit_unit']);
             $param_promo_id = !empty($_POST['promo_id']) ? $_POST['promo_id'] : null;
             $param_billing_month = !empty($_POST['billing_month']) ? $_POST['billing_month'] : null;
@@ -116,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // Attempt to execute the prepared statement
             try {
                 if ($stmt->execute()) {
-                    header('location: user_management.php');
+                    header('location: reseller_management.php');
                     exit;
                 } else {
                     echo 'Something went wrong. Please try again later.';
@@ -138,23 +145,23 @@ include 'header.php';
 ?>
 
 <div class="page-header">
-    <h2>Add New User</h2>
+    <h2>Add New Reseller</h2>
     <div class="page-actions">
-        <a class='btn btn-secondary' href='user_management.php'>
+        <a class='btn btn-secondary' href='reseller_management.php'>
             <span class="material-icons">arrow_back</span>
-            Back to User Management
+            Back to Reseller Management
         </a>
     </div>
 </div>
 
 <div class="card">
     <div class="card-header">
-        <h3>User Information</h3>
+        <h3>Reseller Information</h3>
     </div>
     <div class="card-body">
         <div class="form-container">
-            <p>Please fill this form to create a new VPN user.</p>
-            <form action='add_user.php' method='post'>
+            <p>Please fill this form to create a new reseller user.</p>
+            <form action='add_reseller.php' method='post'>
                 <div class='form-group'>
                     <label class="form-label">Username</label>
                     <input type='text' name='username' class='form-control' value='<?php echo htmlspecialchars($username); ?>'>
@@ -165,39 +172,28 @@ include 'header.php';
                     <input type='password' name='password' class='form-control'>
                     <span class='text-danger'><?php echo $password_err; ?></span>
                 </div>
-                <div class='form-group'>
-                    <label class="form-label">First Name</label>
-                    <input type='text' name='first_name' class='form-control' value='<?php echo htmlspecialchars($first_name); ?>'>
-                    <span class='text-danger'><?php echo $first_name_err; ?></span>
+                <div class="form-group">
+                    <label class="form-label">Name</label>
+                    <input type="text" name="first_name" id="reseller_first_name" class="form-control">
+                    <span class="text-danger"><?php echo $first_name_err; ?></span>
                 </div>
-                <div class='form-group'>
-                    <label class="form-label">Last Name</label>
-                    <input type='text' name='last_name' class='form-control' value='<?php echo htmlspecialchars($last_name); ?>'>
-                    <span class='text-danger'><?php echo $last_name_err; ?></span>
+                <div class="form-group">
+                    <label class="form-label">Address</label>
+                    <input type="text" name="address" id="reseller_address" class="form-control">
+                    <span class="text-danger"><?php echo $address_err; ?></span>
                 </div>
-                <div class='form-group'>
+                <div class="form-group">
                     <label class="form-label">Contact Number</label>
-                    <input type='text' name='contact_number' class='form-control' value='<?php echo htmlspecialchars($contact_number); ?>'>
-                    <span class='text-danger'><?php echo $contact_number_err; ?></span>
+                    <input type="text" name="contact_number" id="reseller_contact_number" class="form-control">
+                    <span class="text-danger"><?php echo $contact_number_err; ?></span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Credits</label>
+                    <input type="number" name="credits" id="reseller_credits" class="form-control" value="0">
                 </div>
                 <div class='form-group'>
-                    <label class="form-label">Daily Limit</label>
-                    <div class="input-group">
-                        <input type="number" name="limit_value" class="form-control" placeholder="Enter limit">
-                        <select name="limit_unit" class="form-control">
-                            <option value="KB">KB</option>
-                            <option value="MB">MB</option>
-                            <option value="GB">GB</option>
-                        </select>
-                    </div>
-                </div>
-                <div class='form-group'>
-                    <label class="form-label">Billing Date</label>
-                    <input type='date' name='billing_month' class='form-control'>
-                </div>
-                <div class='form-group'>
-                    <input type='submit' class='btn btn-primary' value='Create User'>
-                    <a class='btn btn-link' href='user_management.php'>Cancel</a>
+                    <input type='submit' class='btn btn-primary' value='Create Reseller'>
+                    <a class='btn btn-link' href='reseller_management.php'>Cancel</a>
                 </div>
             </form>
         </div>

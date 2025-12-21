@@ -30,7 +30,6 @@ def run(playwright):
         page.wait_for_url("http://localhost:8080/add_user.php")
         page.fill('input[name="username"]', "testuser")
         page.fill('input[name="password"]', "testpassword")
-        page.select_option('select[name="role"]', 'user')
         page.fill('input[name="first_name"]', "Test")
         page.fill('input[name="last_name"]', "User")
         page.fill('input[name="contact_number"]', "1234567890")
@@ -42,11 +41,11 @@ def run(playwright):
         print("User verification successful.")
 
         # Add a new admin
-        page.click("a:has-text('Add New User')")
-        page.wait_for_url("http://localhost:8080/add_user.php")
+        page.goto("http://localhost:8080/admin_management.php")
+        page.click("a:has-text('Add New Admin')")
+        page.wait_for_url("http://localhost:8080/add_admin.php")
         page.fill('input[name="username"]', "testadmin")
         page.fill('input[name="password"]', "testpassword")
-        page.select_option('select[name="role"]', 'admin')
         page.click('input[type="submit"]')
         page.wait_for_url("http://localhost:8080/admin_management.php")
         print("Admin added successfully.")
@@ -55,12 +54,11 @@ def run(playwright):
         print("Admin verification successful.")
 
         # Add a new reseller
-        page.goto("http://localhost:8080/user_management.php")
-        page.click("a:has-text('Add New User')")
-        page.wait_for_url("http://localhost:8080/add_user.php")
+        page.goto("http://localhost:8080/reseller_management.php")
+        page.click("a:has-text('Add New Reseller')")
+        page.wait_for_url("http://localhost:8080/add_reseller.php")
         page.fill('input[name="username"]', "testreseller")
         page.fill('input[name="password"]', "testpassword")
-        page.select_option('select[name="role"]', 'reseller')
         page.locator('#reseller_first_name').fill("Test Reseller")
         page.locator('#reseller_address').fill("123 Test St")
         page.locator('#reseller_contact_number').fill("1234567890")

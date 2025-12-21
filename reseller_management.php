@@ -30,6 +30,12 @@ include 'header.php';
 
 <div class="page-header">
     <h2>Reseller Management</h2>
+    <div class="page-actions">
+        <a href='add_reseller.php' class='btn btn-success'>
+            <span class="material-icons">person_add</span>
+            Add New Reseller
+        </a>
+    </div>
 </div>
 
 <div class="card">
