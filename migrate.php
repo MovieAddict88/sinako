@@ -8,21 +8,24 @@ function column_exists($pdo, $table, $column) {
 }
 
 try {
-    // Add is_reseller column
-    if (!column_exists($pdo, 'users', 'is_reseller')) {
-        $pdo->exec("ALTER TABLE users ADD COLUMN is_reseller TINYINT(1) NOT NULL DEFAULT 0;");
-        echo "Migration: is_reseller column added to users table.<br>";
+    // Add role column if it doesn't exist, or modify it if it does
+    if (!column_exists($pdo, 'users', 'role')) {
+        $pdo->exec("ALTER TABLE users ADD COLUMN role VARCHAR(20) NOT NULL DEFAULT 'user';");
+        echo "Migration: role column added to users table.<br>";
+    } else {
+        $pdo->exec("ALTER TABLE users MODIFY COLUMN role VARCHAR(20) NOT NULL DEFAULT 'user';");
+        echo "Migration: role column modified in users table.<br>";
     }
 
     // Add first_name column
     if (!column_exists($pdo, 'users', 'first_name')) {
-        $pdo->exec("ALTER TABLE users ADD COLUMN first_name VARCHAR(255) NOT NULL;");
+        $pdo->exec("ALTER TABLE users ADD COLUMN first_name VARCHAR(255) NOT NULL DEFAULT '';");
         echo "Migration: first_name column added to users table.<br>";
     }
 
     // Add last_name column
     if (!column_exists($pdo, 'users', 'last_name')) {
-        $pdo->exec("ALTER TABLE users ADD COLUMN last_name VARCHAR(255) NOT NULL;");
+        $pdo->exec("ALTER TABLE users ADD COLUMN last_name VARCHAR(255) NOT NULL DEFAULT '';");
         echo "Migration: last_name column added to users table.<br>";
     }
 
@@ -34,7 +37,7 @@ try {
 
     // Add contact_number column
     if (!column_exists($pdo, 'users', 'contact_number')) {
-        $pdo->exec("ALTER TABLE users ADD COLUMN contact_number VARCHAR(20) NOT NULL;");
+        $pdo->exec("ALTER TABLE users ADD COLUMN contact_number VARCHAR(20) NOT NULL DEFAULT '';");
         echo "Migration: contact_number column added to users table.<br>";
     }
 

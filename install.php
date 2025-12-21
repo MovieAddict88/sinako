@@ -22,7 +22,7 @@ echo "App updates table created successfully<br>";
         login_code VARCHAR(255) UNIQUE,
         device_id VARCHAR(255),
         banned BOOLEAN NOT NULL DEFAULT FALSE,
-        role ENUM("admin","user") NOT NULL DEFAULT "user",
+        role VARCHAR(20) NOT NULL DEFAULT "user",
         daily_limit BIGINT UNSIGNED DEFAULT 0,
         data_usage BIGINT UNSIGNED DEFAULT 0,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

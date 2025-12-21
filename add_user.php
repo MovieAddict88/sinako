@@ -73,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             } else {
                 $last_name = trim($_POST['last_name']);
             }
-        } else {
+        } else if ($_POST['role'] === 'reseller') {
             $last_name = '';
         }
 
@@ -97,6 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $first_name = 'Admin';
         $last_name = 'User';
         $contact_number = '0';
+        $address = '';
     }
 
     if ($_POST['role'] !== 'user') {
@@ -109,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Check input errors before inserting in database
     if (empty($username_err) && empty($password_err) && empty($first_name_err) && empty($last_name_err) && empty($contact_number_err) && empty($address_err)) {
         // Prepare an insert statement
-        $sql = 'INSERT INTO users (username, password, first_name, last_name, contact_number, address, credits, login_code, role, is_reseller, daily_limit, promo_id, billing_month) VALUES (:username, :password, :first_name, :last_name, :contact_number, :address, :credits, :login_code, :role, :is_reseller, :daily_limit, :promo_id, :billing_month)';
+        $sql = 'INSERT INTO users (username, password, first_name, last_name, contact_number, address, credits, login_code, role, daily_limit, promo_id, billing_month) VALUES (:username, :password, :first_name, :last_name, :contact_number, :address, :credits, :login_code, :role, :daily_limit, :promo_id, :billing_month)';
 
         if ($stmt = $pdo->prepare($sql)) {
             // Bind variables to the prepared statement as parameters
@@ -122,7 +123,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $stmt->bindParam(':credits', $param_credits, PDO::PARAM_STR);
             $stmt->bindParam(':login_code', $param_login_code, PDO::PARAM_STR);
             $stmt->bindParam(':role', $param_role, PDO::PARAM_STR);
-            $stmt->bindParam(':is_reseller', $param_is_reseller, PDO::PARAM_BOOL);
             $stmt->bindParam(':daily_limit', $param_daily_limit, PDO::PARAM_INT);
             $stmt->bindParam(':promo_id', $param_promo_id, PDO::PARAM_INT);
             $stmt->bindParam(':billing_month', $param_billing_month, PDO::PARAM_STR);
@@ -137,25 +137,13 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $param_credits = $credits;
             $param_login_code = generate_unique_login_code($pdo);
             $param_role = $_POST['role'];
-            $param_is_reseller = ($_POST['role'] === 'reseller');
             $param_daily_limit = convert_to_bytes($_POST['limit_value'], $_POST['limit_unit']);
             $param_promo_id = !empty($_POST['promo_id']) ? $_POST['promo_id'] : null;
             $param_billing_month = !empty($_POST['billing_month']) ? $_POST['billing_month'] : null;
 
             // Attempt to execute the prepared statement
             try {
-                $pdo->beginTransaction();
                 if ($stmt->execute()) {
-                    if ($_POST['role'] === 'reseller') {
-                        $user_id = $pdo->lastInsertId();
-                        $sql_reseller = 'INSERT INTO resellers (user_id) VALUES (:user_id)';
-                        if ($stmt_reseller = $pdo->prepare($sql_reseller)) {
-                            $stmt_reseller->bindParam(':user_id', $user_id, PDO::PARAM_INT);
-                            $stmt_reseller->execute();
-                            unset($stmt_reseller);
-                        }
-                    }
-                    $pdo->commit();
                     // Redirect to the appropriate management page
                     if ($_POST['role'] === 'admin') {
                         header('location: admin_management.php');
@@ -166,11 +154,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     }
                     exit;
                 } else {
-                    $pdo->rollBack();
                     echo 'Something went wrong. Please try again later.';
                 }
             } catch (Exception $e) {
-                $pdo->rollBack();
                 echo 'Something went wrong. Please try again later.';
             }
 
