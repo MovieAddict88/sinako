@@ -15,6 +15,7 @@ $stmt = $pdo->prepare("
            (SELECT SUM(c.commission_earned) FROM commissions c WHERE c.reseller_id = r.id) as total_commission
     FROM users u
     LEFT JOIN resellers r ON u.id = r.user_id
+    WHERE u.role = 'reseller'
 ");
 $stmt->execute();
 $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
