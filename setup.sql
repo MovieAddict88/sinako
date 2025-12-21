@@ -6,7 +6,12 @@ CREATE TABLE `users` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `username` varchar(50) NOT NULL,
   `password` varchar(255) NOT NULL,
+  `login_code` varchar(255) DEFAULT NULL,
+  `device_id` varchar(255) DEFAULT NULL,
   `role` varchar(20) NOT NULL DEFAULT 'user',
+  `daily_limit` bigint(20) unsigned DEFAULT 0,
+  `billing_month` date DEFAULT NULL,
+  `promo_id` int(11) DEFAULT NULL,
   `is_reseller` tinyint(1) NOT NULL DEFAULT 0,
   `reseller_id` int(11) DEFAULT NULL,
   `credits` decimal(10,2) NOT NULL DEFAULT 0.00,
@@ -84,4 +89,25 @@ CREATE TABLE `vpn_sessions` (
   PRIMARY KEY (`id`),
   KEY `user_id` (`user_id`),
   CONSTRAINT `vpn_sessions_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `commissions` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `reseller_id` int(11) NOT NULL,
+  `client_id` int(11) NOT NULL,
+  `commission_earned` decimal(10,2) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`id`),
+  KEY `reseller_id` (`reseller_id`),
+  KEY `client_id` (`client_id`),
+  CONSTRAINT `commissions_ibfk_1` FOREIGN KEY (`reseller_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `commissions_ibfk_2` FOREIGN KEY (`client_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE `resellers` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `resellers_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
