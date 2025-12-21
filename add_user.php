@@ -139,13 +139,20 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $param_role = $_POST['role'];
             $param_is_reseller = ($_POST['role'] === 'reseller');
             $param_daily_limit = convert_to_bytes($_POST['limit_value'], $_POST['limit_unit']);
-            $param_promo_id = $_POST['promo_id'];
-            $param_billing_month = $_POST['billing_month'];
+            $param_promo_id = !empty($_POST['promo_id']) ? $_POST['promo_id'] : null;
+            $param_billing_month = !empty($_POST['billing_month']) ? $_POST['billing_month'] : null;
 
             // Attempt to execute the prepared statement
             if ($stmt->execute()) {
-                // Redirect to user management page
-                header('location: index.php');
+                // Redirect to the appropriate management page
+                if ($_POST['role'] === 'admin') {
+                    header('location: admin_management.php');
+                } elseif ($_POST['role'] === 'reseller') {
+                    header('location: reseller_management.php');
+                } else {
+                    header('location: user_management.php');
+                }
+                exit;
             } else {
                 echo 'Something went wrong. Please try again later.';
             }
@@ -218,22 +225,22 @@ include 'header.php';
                 <div class="reseller-field" style="display: none;">
                     <div class="form-group">
                         <label class="form-label">Name</label>
-                        <input type="text" name="first_name" class="form-control">
+                        <input type="text" name="first_name" id="reseller_first_name" class="form-control">
                         <span class="text-danger"><?php echo $first_name_err; ?></span>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Address</label>
-                        <input type="text" name="address" class="form-control">
+                        <input type="text" name="address" id="reseller_address" class="form-control">
                         <span class="text-danger"><?php echo $address_err; ?></span>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Contact Number</label>
-                        <input type="text" name="contact_number" class="form-control">
+                        <input type="text" name="contact_number" id="reseller_contact_number" class="form-control">
                         <span class="text-danger"><?php echo $contact_number_err; ?></span>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Credits</label>
-                        <input type="number" name="credits" class="form-control" value="0">
+                        <input type="number" name="credits" id="reseller_credits" class="form-control" value="0">
                     </div>
                 </div>
 
