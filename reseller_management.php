@@ -65,7 +65,12 @@ include 'header.php';
                                             </button>
                                         </form>
                                         <a href="view_reseller.php?id=<?php echo $user['reseller_id']; ?>" class="btn btn-secondary btn-block mb-1 btn-responsive">View</a>
-                                        <a href="reseller_dashboard.php?user_id=<?php echo $user['id']; ?>" class="btn btn-primary btn-block btn-responsive">Dashboard</a>
+                                        <a href="reseller_dashboard.php?user_id=<?php echo $user['id']; ?>" class="btn btn-primary btn-block btn-responsive mb-1">Dashboard</a>
+                                        <form action="delete_reseller.php" method="post" onsubmit="return confirm('Are you sure you want to permanently delete this reseller and all associated clients? This action cannot be undone.');">
+                                            <input type="hidden" name="user_id" value="<?php echo $user['id']; ?>">
+                                            <input type="hidden" name="csrf_token" value="<?php echo $csrf_token; ?>">
+                                            <button type="submit" class="btn btn-danger btn-block btn-responsive">Delete</button>
+                                        </form>
                                     <?php else: ?>
                                         <form action="toggle_reseller.php" method="post" class="mb-1">
                                             <input type="hidden" name="id" value="<?php echo $user['id']; ?>">
