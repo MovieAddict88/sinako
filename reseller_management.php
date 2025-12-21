@@ -43,6 +43,17 @@ include 'header.php';
         <h3>Users</h3>
     </div>
     <div class="card-body">
+        <?php
+        if (isset($_SESSION['success'])) {
+            echo '<div class="alert alert-success">' . htmlspecialchars($_SESSION['success']) . '</div>';
+            unset($_SESSION['success']);
+        }
+        if (isset($_SESSION['error'])) {
+            echo '<div class="alert alert-danger">' . htmlspecialchars($_SESSION['error']) . '</div>';
+            unset($_SESSION['error']);
+        }
+        ?>
+    <div class="card-body">
         <div class="table-responsive">
             <table class="table">
                 <thead>
